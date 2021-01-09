@@ -1,0 +1,49 @@
+version: '3'
+
+networks:
+  laravel:
+
+services:
+  nginx:
+    image: library/nginx:stable-alpine
+    container_name: nginx-5dmat-web
+    volumes:
+      - ./src/app:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8060:80"
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - laravel
+
+  mysql:
+    image: library/mysql:5.7.22
+    container_name: mysql-5dmat-web
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: homestead
+      MYSQL_ROOT_PASSWORD: homestead
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - laravel
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-5dmat-web
+    volumes:
+      - ./src/app:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - laravel
